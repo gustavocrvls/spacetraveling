@@ -31,7 +31,29 @@ interface HomeProps {
 
 export default function Home({ postsPagination }: HomeProps): JSX.Element {
   const [nextPage, setNextPage] = useState(postsPagination.next_page);
-  const { results: posts } = postsPagination;
+  const [posts, setPosts] = useState(postsPagination.results);
+
+  function loadMorePosts(): void {
+    if (!nextPage) return;
+
+    fetch(nextPage, { method: 'GET', headers: new Headers() })
+      .then(response => response.json())
+      .then(data => {
+        const newPosts = data.results.map(post => {
+          return {
+            uid: post.uid,
+            first_publication_date: post.first_publication_date,
+            data: {
+              title: post.data.title,
+              subtitle: post.data.subtitle,
+              author: post.data.author,
+            },
+          };
+        });
+        setPosts([...posts, ...newPosts]);
+        setNextPage(data.next_page);
+      });
+  }
 
   return (
     <div className={commonStyles.container}>
@@ -61,6 +83,15 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
             </Link>
           </div>
         ))}
+        {nextPage && (
+          <button
+            type="button"
+            className={styles.loadMoreButton}
+            onClick={loadMorePosts}
+          >
+            Carregar mais posts
+          </button>
+        )}
       </div>
     </div>
   );

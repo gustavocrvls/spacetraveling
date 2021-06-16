@@ -9,6 +9,9 @@
     font-size: 1.125rem;
   }
 
+  & + .post {
+    margin-top: 3rem;
+  }
 }
 
 .about {
@@ -31,5 +34,18 @@
     svg {
       margin-right: 0.25rem;
     }
+  }
+}
+
+.loadMoreButton {
+  background-color: transparent;
+  border: 0;
+  color: var(--pink-500);
+  font-size: 1.125rem;
+
+  margin-top: 2rem;
+
+  &:hover {
+    text-decoration: underline;
   }
 }
