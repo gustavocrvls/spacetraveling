@@ -4,16 +4,16 @@
   padding: 0;
 }
 
-:root {
-  --white: #FFF;
+// COLORS
 
-  --gray-100: #F8F8F8;
-  --gray-200: #D7D7D7;
-  --gray-300: #BBBBBB;
-  --gray-900: #1A1D23;
+$color-white: #FFF;
 
-  --pink-500: #FF57B2;
-}
+$color-gray-100: #F8F8F8;
+$color-gray-200: #D7D7D7;
+$color-gray-300: #BBBBBB;
+$color-gray-900: #1A1D23;
+
+$color-pink-500: #FF57B2;
 
 @media (max-width: 1080px) {
   html {
@@ -28,8 +28,8 @@
 }
 
 body {
-  background: var(--gray-900);
-  color: var(--white);
+  background: $color-gray-900;
+  color: $color-white;
 }
 
 body, input, textarea, select, button {
