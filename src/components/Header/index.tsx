@@ -1,11 +1,16 @@
+import Link from 'next/link';
 import commonStyles from '../../styles/common.module.scss';
 import styles from './header.module.scss';
 
-export function Header(): JSX.Element {
+export default function Header(): JSX.Element {
   return (
     <header className={`${commonStyles.container} ${styles.headerContainer}`}>
       <div className={commonStyles.innerContainer}>
-        <img src="/logo.svg" alt="spacetraveling" width="240" />
+        <Link href="/">
+          <a>
+            <img src="/logo.svg" alt="logo" width="240" />
+          </a>
+        </Link>
       </div>
     </header>
   );
