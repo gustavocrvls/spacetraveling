@@ -1,6 +1,10 @@
 import { GetStaticProps } from 'next';
-
 import { FiCalendar, FiUser } from 'react-icons/fi';
+import Prismic from '@prismicio/client';
+import { useState } from 'react';
+import { format } from 'date-fns';
+import ptBR from 'date-fns/locale/pt-BR';
+import Link from 'next/link';
 import { getPrismicClient } from '../services/prismic';
 
 import commonStyles from '../styles/common.module.scss';
@@ -25,30 +29,77 @@ interface HomeProps {
   postsPagination: PostPagination;
 }
 
-export default function Home(): JSX.Element {
+export default function Home({ postsPagination }: HomeProps): JSX.Element {
+  const [nextPage, setNextPage] = useState(postsPagination.next_page);
+  const { results: posts } = postsPagination;
+
   return (
     <div className={commonStyles.container}>
       <div className={commonStyles.innerContainer}>
-        <div className={styles.post}>
-          <strong>Como utilizar Hooks</strong>
-          <p>Pensando em sincronização em vez de ciclos de vida.</p>
-          <div className={styles.about}>
-            <span>
-              <FiCalendar /> 15 Mar 2021
-            </span>
-            <span>
-              <FiUser /> Joseph Oliveira
-            </span>
+        {posts.map(post => (
+          <div className={styles.post} key={post.uid}>
+            <Link href={`/post/${post.uid}`}>
+              <a>
+                <strong>{post.data.title}</strong>
+                <p>{post.data.subtitle}</p>
+                <div className={styles.about}>
+                  <span>
+                    <FiCalendar />{' '}
+                    {format(
+                      new Date(post.first_publication_date),
+                      'dd MMM yyyy',
+                      {
+                        locale: ptBR,
+                      }
+                    )}
+                  </span>
+                  <span>
+                    <FiUser /> {post.data.author}
+                  </span>
+                </div>
+              </a>
+            </Link>
           </div>
-        </div>
+        ))}
       </div>
     </div>
   );
 }
 
-// export const getStaticProps = async () => {
-//   // const prismic = getPrismicClient();
-//   // const postsResponse = await prismic.query(TODO);
+export const getStaticProps: GetStaticProps = async () => {
+  const prismic = getPrismicClient();
+  const postsResponse = await prismic.query(
+    [Prismic.Predicates.at('document.type', 'posts')],
+    {
+      fetch: [
+        'post.title',
+        'post.content',
+        'post.author',
+        'post.first_publication_date',
+      ],
+      pageSize: 1,
+    }
+  );
 
-//   // TODO
-// };
+  const posts = postsResponse.results.map(post => {
+    return {
+      uid: post.uid,
+      first_publication_date: post.first_publication_date,
+      data: {
+        title: post.data.title,
+        subtitle: post.data.subtitle,
+        author: post.data.author,
+      },
+    };
+  });
+
+  return {
+    props: {
+      postsPagination: {
+        results: posts,
+        next_page: postsResponse.next_page,
+      },
+    },
+    revalidate: 60 * 60 * 24, // 1 day
+  };
+};
