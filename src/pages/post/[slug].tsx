@@ -6,6 +6,8 @@ import { format } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
 import { RichText } from 'prismic-dom';
 import { FiCalendar, FiClock, FiUser } from 'react-icons/fi';
+import { useRouter } from 'next/router';
+import Prismic from '@prismicio/client';
 import { getPrismicClient } from '../../services/prismic';
 
 import commonStyles from '../../styles/common.module.scss';
@@ -33,6 +35,8 @@ interface PostProps {
 }
 
 export default function Post({ post }: PostProps): JSX.Element {
+  const router = useRouter();
+
   const formattedPost = {
     first_publication_date: format(
       new Date(post.first_publication_date),
@@ -56,6 +60,10 @@ export default function Post({ post }: PostProps): JSX.Element {
   });
 
   const timeToRead = Math.ceil(content.split(' ').length / 200);
+
+  if (router.isFallback) {
+    return <div>Carregando...</div>;
+  }
 
   return (
     <div>
@@ -91,11 +99,29 @@ export default function Post({ post }: PostProps): JSX.Element {
 
 export const getStaticPaths: GetStaticPaths = async () => {
   const prismic = getPrismicClient();
-  // const posts = await prismic.query(TODO);
+  const postsResponse = await prismic.query(
+    [Prismic.Predicates.at('document.type', 'posts')],
+    {
+      fetch: [
+        'post.title',
+        'post.content',
+        'post.author',
+        'post.first_publication_date',
+      ],
+      pageSize: 1,
+    }
+  );
+  const paths = postsResponse.results.map(post => {
+    return {
+      params: {
+        slug: post.uid,
+      },
+    };
+  });
 
   return {
-    paths: [],
-    fallback: 'blocking',
+    paths,
+    fallback: true,
   };
 };
 
